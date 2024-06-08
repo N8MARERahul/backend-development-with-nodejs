@@ -1,5 +1,5 @@
 import { v2 as cloudinary} from "cloudinary"
-import fs from "fs"
+import fs, { writeFileSync } from "fs"
           
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -15,8 +15,9 @@ const uploadOnCloudinary = async (localFilePath) => {
             resource_type: "auto"
         })
         // File uploaded successfully
-        console.log("File uploaded successfully", response.url)
-        console.log("\nResponse -> ", response)
+        // console.log("File uploaded successfully", response.url)
+        // console.log("\nResponse -> ", response)
+        fs.unlinkSync(localFilePath)
         return response
 
     } catch (error) {
