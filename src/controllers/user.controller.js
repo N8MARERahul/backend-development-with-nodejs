@@ -151,7 +151,7 @@ const logoutUser = asyncHandler ( async (req, res) => {
         req.user._id, 
         {
             $unset: {
-                refreshToken: ""
+                refreshToken: 1
             }
         },
         {
@@ -400,7 +400,7 @@ const getUserChannelProfile = asyncHandler ( async (req, res) => {
         throw new ApiError(404, "Channel not found")
     }
 
-    console.log(channel);
+    // console.log(channel);
 
     return res
     .status(200)
@@ -417,7 +417,7 @@ const getWatchHistory = asyncHandler( async (req, res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: mongoose.Types.ObjectId(req.user._id),
+                _id: new mongoose.Types.ObjectId(req.user._id),
             }
         },
         {
@@ -459,7 +459,7 @@ const getWatchHistory = asyncHandler( async (req, res) => {
     return res
     .status(200)
     .json(
-        new Response(
+        new ApiResponse(
             200,
             user[0].watchHistory,
             "Watch history fetched successfully"
