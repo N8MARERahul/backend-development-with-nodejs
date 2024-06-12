@@ -68,7 +68,7 @@ const registerUser = asyncHandler( async (req, res) => {
     const coverImage = await uploadOnCloudinary(coverImageLocalPath) 
 
     if (!avatar) {
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError(500, "Error uploading avatar to cloudinary")
     }
 
     // create user object - create entry in db
@@ -268,7 +268,7 @@ const updateAccountDetails = asyncHandler( async (req, res) => {
 
     return res
     .status(200)
-    .json(new ApiError(200, user, "Account details updated successfully"))
+    .json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
 const updateUserAvatar = asyncHandler( async (req, res) => {
