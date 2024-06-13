@@ -4,7 +4,6 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
-import { response } from "express"
 
 const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
@@ -18,15 +17,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const pipeLine = [
         {
             $match : {
-                video : videoId
-            }
-        },
-        {
-            $lookup : {
-                from : "videos",
-                localField : "video",
-                foreignField : "_id",
-                as : "video"
+                video : new mongoose.Types.ObjectId(videoId)
             }
         },
         {
@@ -39,9 +30,6 @@ const getVideoComments = asyncHandler(async (req, res) => {
         },
         {
             $addFields : {
-                video : {
-                    $first : "$video"
-                },
                 owner : {
                     $first : "$owner"
                 }
@@ -50,23 +38,21 @@ const getVideoComments = asyncHandler(async (req, res) => {
         {
             $project : {
                 content : 1,
-                video : {
-                    _id : 1,
-                    thumbnail : 1,
-                    title : 1,
-                    description : 1,
-                    views : 1,
-                },
                 owner : {
                     fullName : 1,
                     username : 1,
                     avatar : 1,
-                }
+                },
+                createdAt : 1,
+                updatedAt : 1,
             }
+        },
+        {
+            $sort : { updatedAt : -1 }
         }
     ]
 
-    const comments = Comment.aggregatePaginate(
+    const comments = await Comment.aggregatePaginate(
         Comment.aggregate(pipeLine),
         options
     )
@@ -78,12 +64,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
     if ( comments.totalDocs === 0 ) {
         return res
         .status(201)
-        .json( new Response (201, "No comments found") )
+        .json( new ApiResponse (201, "No comments found") )
     }
 
     return res
         .status(200)
-        .json( new Response (
+        .json( new ApiResponse(
             200, 
             comments.docs,
             "Comments fetched successfully"
@@ -156,9 +142,9 @@ const updateComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
-    const {videoId} = req.params
+    const {commentId} = req.params
 
-    const comment = await Comment.findByIdAndDelete(videoId)
+    const comment = await Comment.findByIdAndDelete(commentId)
 
     if (!comment) {
         throw new ApiError(400, "Invalid CommentId")
@@ -177,5 +163,5 @@ export {
     getVideoComments, 
     addComment, 
     updateComment,
-     deleteComment
+    deleteComment
     }
